@@ -102,7 +102,7 @@ def score_matrix(eps_t,t,lmd_a, lmd_d, mate, interval_granularity, k= 20 ):
                     st[i][j] = dic[max_index]
     return dp,st,s_num
 
-def appr_repair(t, lmd_a, lmd_d, mate, interval_granularity):
+def appr_repair(t, lmd_a, lmd_d, mate, interval_granularity, l_min):
     eps_list = [round(t[i] - t[i - 1],interval_granularity) for i in range(1, len(t))] 
     interval = mode_interval_granularity(eps_list)
     media = np.median(eps_list)
@@ -126,10 +126,10 @@ def appr_repair(t, lmd_a, lmd_d, mate, interval_granularity):
         else:
             all_matrix = np.concatenate((all_matrix,mt))
             all_start = np.concatenate((all_start,st))
-    s_repair, eps_t_e, s_0_e, m_e = section(t,all_matrix,all_start,interval_list,interval_granularity)
+    s_repair, eps_t_e, s_0_e, m_e = section(t, all_matrix, all_start, interval_list, interval_granularity, l_min)
     return s_repair, eps_t_e, s_0_e, m_e
 
-def section(t, matrix, start, interval_list, interval_granularity):
+def section(t, matrix, start, interval_list, interval_granularity, l_min):
     s_0_e = []
     eps_t_e = []
     m_e = []
@@ -139,14 +139,23 @@ def section(t, matrix, start, interval_list, interval_granularity):
         matrix = np.array(matrix)
     while(j>=0):
         index = np.argmax(matrix[:,j])
-        j = start[index][j]
-        s_0_e.insert(0,j)
-        m_e.insert(0,interval_list[index][1]+1)
-        eps_t_e.insert(0,interval_list[index][0])
-        s_list = [round(t[j] + i * interval_list[index][0],interval_granularity) for i in range(interval_list[index][1]+1)]
-        j=j-1
-        s_list = [t for t in s_list if t < s_repair[0]]
-        s_repair = s_list + s_repair
+        if (np.max(matrix[:,j])==-10e8):
+            print(start[index][j])
+            print(interval_list[index][1]+1)
+            print("Can not be repaired according to l_min requirements.")
+            break
+        elif ((interval_list[index][1]+1) >= l_min or start[index][j]==0):
+            j = start[index][j]
+            s_0_e.insert(0,j)
+            m_e.insert(0,interval_list[index][1]+1)
+            eps_t_e.insert(0,interval_list[index][0])
+            s_list = [round(t[j] + i * interval_list[index][0],interval_granularity) for i in range(interval_list[index][1]+1)]
+            j=j-1
+            if s_repair:
+                s_list = [t for t in s_list if t < s_repair[0]]
+            s_repair = s_list + s_repair
+        else:
+            matrix[index,j] = -10e8
     return s_repair,eps_t_e, s_0_e, m_e
 
                      
@@ -164,6 +173,7 @@ if __name__ == "__main__":
             "lmd_a": 36,
             "lmd_d": 36,
             "m_mate": 36,
+            "l_min": 3,
         },
         "s-energy":{
             "file_counts": 5,
@@ -176,6 +186,7 @@ if __name__ == "__main__":
             "lmd_a": 60,
             "lmd_d": 60,
             "m_mate": 60,
+            "l_min": 3,
         },
         
     }
@@ -223,8 +234,9 @@ if __name__ == "__main__":
             lmd_d = param["lmd_d"]
             interval_granularity = int(param["interval_granularity"])
             mate = param["m_mate"]
+            l_min = param["l_min"]
             start = time.time()
-            appr_res, eps_t_e, s_0_e, m_e = appr_repair(original, lmd_a, lmd_d, mate, interval_granularity)
+            appr_res, eps_t_e, s_0_e, m_e = appr_repair(original, lmd_a, lmd_d, mate, interval_granularity, l_min)
             end = time.time()
             appr_time = end - start
 
