@@ -42,7 +42,7 @@ def metric_res(truth_factors, repair, truth, fault, metric_name="cost", starts=[
         return cal_rmse(truth_factors, truth, repair)
 
 
-def move(t,i,j,interval,s0,mt): #移动
+def move(t, i, j, interval, s0, mt): #移动
     t_len = t[j] - t[s0]
     s_len = i * interval
     m = abs(t_len - s_len)/interval
@@ -70,7 +70,7 @@ def get_sm(truth):
             m = m + 1
     return eps_t_t, s_0_t, m_t
 
-def score_matrix(eps_t,t,lmd_a, lmd_d, mate, interval_granularity, k= 20 ):
+def score_matrix(eps_t, t, lmd_a, lmd_d, mate, interval_granularity, k=20):
     s_num = round((t[len(t) - 1] - t[0]) / eps_t + 2)
     dp =[[-100] * len(t) for i in range (s_num)]
     st = [[0] * len(t) for i in range(s_num) ]
