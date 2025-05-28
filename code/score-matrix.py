@@ -4,7 +4,7 @@ import numpy as np
 from collections import Counter
 from datetime import datetime
 import time
-from metrics import cal_rmse, cal_cost, calDTW, calAccuracy ,calDTW_new #评估指标
+from metrics import cal_rmse, cal_cost, calDTW, calAccuracy 
 
 def time2ts(seq, time_scale):
     ts_list = []
@@ -22,10 +22,6 @@ def mode_interval_granularity(value):
 
 
 def metric_res(truth_factors, repair, truth, fault, metric_name="cost", starts=[0]):
-    """
-    :param metric_id: 0: repair cost metric, 1: dtw metric, 2:rmse metric
-    :return: loss
-    """
     if metric_name == "cost":
         lmd_a = 5 * (truth[1] - truth[0])
         lmd_d = 5 * (truth[1] - truth[0])
@@ -42,7 +38,7 @@ def metric_res(truth_factors, repair, truth, fault, metric_name="cost", starts=[
         return cal_rmse(truth_factors, truth, repair)
 
 
-def move(t, i, j, interval, s0, mt): #移动
+def move(t, i, j, interval, s0, mt): 
     t_len = t[j] - t[s0]
     s_len = i * interval
     m = abs(t_len - s_len)/interval
@@ -165,9 +161,9 @@ if __name__ == "__main__":
         "s-pm":{
             "file_counts": 5,
             "truth_col": 0,
-            "truth_dir": "./data/pm",
+            "truth_dir": "../data/pm",
             "original_col": 1,
-            "original_dir": "./data/pm",
+            "original_dir": "../data/pm",
             "start_point_granularity": 1,
             "interval_granularity":36,
             "lmd_a": 36,
@@ -178,9 +174,9 @@ if __name__ == "__main__":
         "s-energy":{
             "file_counts": 5,
             "truth_col": 0,
-            "truth_dir": "./data/energy",
+            "truth_dir": "../data/energy",
             "original_col": 1,
-            "original_dir": "./data/energy",
+            "original_dir": "../data/energy",
             "start_point_granularity": 1,
             "interval_granularity": 60,
             "lmd_a": 60,
@@ -210,11 +206,13 @@ if __name__ == "__main__":
             for metric in metrics:
                 result_map[f'{method}-{metric}'] = []
             result_map[f'{method}-time'] = []
-        dataset_path = os.path.join("./result", dataset)
+        dataset_path = os.path.join("../result", dataset)
+        if not os.path.exists("../result"):
+            os.mkdir("../result")
         if not os.path.exists(dataset_path):
             os.mkdir(dataset_path)
         for ts in range(file_counts):
-            print(ts)
+            print(f"Processing file #{ts}")
             original_dir = param["original_dir"]                
             file_name = os.path.join(original_dir, f"series_{ts}.csv")              
             data = pd.read_csv(file_name)
@@ -239,7 +237,7 @@ if __name__ == "__main__":
             appr_res, eps_t_e, s_0_e, m_e = appr_repair(original, lmd_a, lmd_d, mate, interval_granularity, l_min)
             end = time.time()
             appr_time = end - start
-
+            print(f"Approximate runtime: {appr_time:.2f} seconds")
             for metric in metrics:
                 result_map[f"appr-{metric}"].append(metric_res([eps_t_t, s_0_t, m_t], appr_res, truth, original, metric))
             result_map[f"appr-time"].append(appr_time)              
@@ -248,13 +246,4 @@ if __name__ == "__main__":
             np.savetxt(os.path.join(dataset_path, f"appr-{metric}{version}.txt"), result_map[f"appr-{metric}"])                
     for metric in (metrics + ["time"]):
         result_dfs[metric].to_csv(os.path.join("result", f"exp1-{dataset}-{metric}{version}.csv"))
-
-
-            
-
-
-
-
-
-
 

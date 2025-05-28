@@ -54,7 +54,7 @@ def variance_constraint_clean(df: pd.DataFrame, variance_constraints: dict, ra: 
     return df
 
 if __name__ == '__main__':
-    df = pd.read_csv('data/pm_seg.csv') 
+    df = pd.read_csv('../data/pm/pm_seg.csv') 
     w = 10  
     column_name = 'dirty'  
     dff = df[[column_name]]

@@ -37,10 +37,6 @@ def get_sm(truth):
     return eps_t_t, s_0_t, m_t
 
 def metric_res(truth_factors, repair, truth, fault, metric_name="cost"):
-    """
-    :param metric_id: 0: repair cost metric, 1: dtw metric, 2:rmse metric
-    :return: loss
-    """
     if metric_name == "cost":
         lmd_a = 5 * (truth[1] - truth[0])
         lmd_d = 5 * (truth[1] - truth[0])
@@ -62,9 +58,9 @@ if __name__ == "__main__":
         "s-energy":{
             "file_counts": 5,
             "truth_col": 0,
-            "truth_dir": "./data/energy",
+            "truth_dir": "../data/energy",
             "original_col": 1,
-            "original_dir": "./data/energy",
+            "original_dir": "../data/energy",
             "start_point_granularity": 1,
             "interval_granularity": 60,
             "lmd_a": 60,
@@ -95,12 +91,14 @@ if __name__ == "__main__":
                 result_map[f'{method}-{metric}'] = []
             result_map[f'{method}-time'] = []
 
-        dataset_path = os.path.join("./result", dataset)
+        dataset_path = os.path.join("../result", dataset)
         print(os.path.abspath("./"))
+        if not os.path.exists("../result"):
+            os.mkdir("../result")
         if not os.path.exists(dataset_path):
             os.mkdir(dataset_path)
         for ts in range(file_counts):
-            print(ts)
+            print(f"Processing file #{ts}")
             original_dir = param["original_dir"]
             file_name = os.path.join(original_dir, f"series_{ts}.csv")
             data = pd.read_csv(file_name)
@@ -135,6 +133,3 @@ if __name__ == "__main__":
             np.savetxt(os.path.join(dataset_path, f"exact-{metric}{version}.txt"), result_map[f"exact-{metric}"])
     for metric in (metrics + ["time"]):
         result_dfs[metric].to_csv(os.path.join("result", f"exp1-{metric}{version}.csv"))
-
-
-

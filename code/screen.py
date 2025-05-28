@@ -148,7 +148,7 @@ class Assist:
 
 
 def main():
-    input_file = "data/pm/pm.data"
+    input_file = "../data/pm/pm.data"
     start_time = time.time()
     assist = Assist()
 
