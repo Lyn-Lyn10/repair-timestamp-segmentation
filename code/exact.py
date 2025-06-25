@@ -1,13 +1,8 @@
-import os
 import pandas as pd
 import numpy as np
 from collections import Counter
 
-def determine_interval(t):
-    eps = [t[i] - t[i-1] for i in range(1,len(t-1))]
-    return np.median(eps)
-
-def match_searching(t, eps_t, s_0, d, lmd_a, lmd_d, lmd_m, DP):
+def match_searching(t, eps_t, s_0, d, lmd_a, lmd_d, DP):
     n = len(t)
     ln = t[n-1] - t[0]
     dp = [[] for i in range(n+1-d)]
@@ -53,20 +48,20 @@ def mode_interval_granularity(value):
 def round_to_granularity(value, granularity):
     return round(value / granularity) * granularity
 
-def exact_repair(t, lmd_a, lmd_d, lmd_m, l,interval_granularity, start_point_granularity=1, bias_d=1, bias_s=1):
+def exact_repair(t, lmd_a, lmd_d, l,interval_granularity, start_point_granularity=1, bias_d=1, bias_s=1):
     eps_list = [t[i] - t[i - 1] for i in range(1, len(t) - 1)]
     eps_md = np.median(eps_list)
     interval = mode_interval_granularity(eps_list)
     n = len(t)
     DP = [[[10e4,0,0]for j in range(n+1)] for i in range(n)]
     eps_t = round_to_granularity(eps_md, interval_granularity) 
-    for eps_t,num in interval[0:2]:
+    for eps_t,num in interval[0:2]: # Set the number of discussion intervals as needed.
         if eps_t==0:
             continue
         d = 0
         while d!=n:
             s_0 = t[d] 
-            DP = match_searching(t, eps_t, s_0, d, lmd_a, lmd_d, lmd_m, DP)
+            DP = match_searching(t, eps_t, s_0, d, lmd_a, lmd_d, DP)
             d += 1
     s = check_M(DP,t,l)
     return s
@@ -95,17 +90,3 @@ def check_M(DP,t,l):
             M[i][1] = M[num][1]+[s_0 + h*eps_t for h in range(k+1)]
     
     return  M[n-1][1]
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,9 +5,9 @@ This project provides implementations for timestamp segmentation and repair meth
 ## 📁 Project Structure
 
 - `code/`: Contains all implementation code for segmentation and repair.
-  - `s-main.py`: Main entry point for running the SegRIR-exact method.
-  - `exact.py`: Core implementation of the **SegRIR-exact** repair algorithm.
-  - `score-matrix.py`: Implementation of the **SegRIR-appr** approximation method.
+  - `s-main.py`: Main entry point for running the SegRIR method.
+  - `exact.py`: Implementation of the **SegRIR-exact** exact repair method.
+  - `appr.py`: Implementation of the **SegRIR-appr** approximation repair method.
   - `metrics.py`: Defines the evaluation metrics used to assess repair quality.
   - `screen.py`: Implementation of the **SCREEN** baseline method.
   - `var.py`: Implementation of the **VAR** baseline method.
@@ -21,9 +21,8 @@ This project provides implementations for timestamp segmentation and repair meth
 
 ## 🚀 Running the Example
 
-> ⚠️ Recommended Python version: 3.10+
+> ⚠️ Recommended Python version: 3.10 
 ```bash
 pip install -r requirements.txt
 cd code/
 python s-main.py
-python score-matrix.py

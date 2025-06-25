@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from exact import exact_repair 
+from appr import appr_repair
 from metrics import cal_rmse, cal_cost, calDTW, calAccuracy 
 import time
 
@@ -14,8 +15,6 @@ def time2ts(seq, time_scale):
         ts_list.append(timeStamp)
     return ts_list
 
-def equal_series_generate(eps_t, s_0, m):
-    return [s_0 + i*eps_t for i in range(m)]
 
 def get_sm(truth):
     eps_t_t = []
@@ -65,7 +64,20 @@ if __name__ == "__main__":
             "interval_granularity": 60,
             "lmd_a": 60,
             "lmd_d": 60,
-            "lmd_m": 60,
+            "m_mate": 60,
+            "l_min": 5,
+        },
+        "s-pm":{
+            "file_counts": 5,
+            "truth_col": 0,
+            "truth_dir": "../data/pm",
+            "original_col": 1,
+            "original_dir": "../data/pm",
+            "start_point_granularity": 1,
+            "interval_granularity":36,
+            "lmd_a": 36,
+            "lmd_d": 36,
+            "m_mate": 36,
             "l_min": 5,
         },
     }
@@ -74,7 +86,7 @@ if __name__ == "__main__":
     version = "-test"
     datasets = ["s-energy"]
     metrics = ["dtw"]
-    methods = ["exact"]
+    methods = ["appr"]
     data_characteristic = False
     result_dfs = {}
     for m in metrics:
@@ -116,20 +128,30 @@ if __name__ == "__main__":
             eps_t_t, s_0_t, m_t = get_sm(truth)
             lmd_a = param["lmd_a"]
             lmd_d = param["lmd_d"]
-            lmd_m = param["lmd_m"]
-            l = param["l_min"]
+            mate = param["m_mate"]
+            l_min = param["l_min"]
             interval_granularity = param["interval_granularity"]
             start_point_granularity = param["start_point_granularity"]
+            print("appr begin")
             start = time.time()
-            exact_res = exact_repair(original, lmd_a, lmd_d, lmd_m, l, interval_granularity, start_point_granularity)
-            print("exact end")
+            appr_res, eps_t_e, s_0_e, m_e = appr_repair(original, lmd_a, lmd_d, mate, interval_granularity, l_min)
             end = time.time()
+            appr_time = end - start
+            print("appr end")
+            start = time.time()
+            exact_res = exact_repair(original, lmd_a, lmd_d, l_min, interval_granularity, start_point_granularity)
+            end = time.time()
+            print("exact end")
             exact_time = end - start
             for metric in metrics:
                 result_map[f"exact-{metric}"].append(metric_res([eps_t_t, s_0_t, m_t], exact_res, truth, original,metric))
+                result_map[f"appr-{metric}"].append(metric_res([eps_t_t, s_0_t, m_t], appr_res, truth, original, metric))
             result_map[f"exact-time"].append(exact_time)
+            result_map[f"appr-time"].append(appr_time) 
         for metric in (metrics + ["time"]):
             result_dfs[metric].at[dataset, "exact"] = np.mean(result_map[f"exact-{metric}"])
             np.savetxt(os.path.join(dataset_path, f"exact-{metric}{version}.txt"), result_map[f"exact-{metric}"])
+            result_dfs[metric].at[dataset, "appr"] = np.mean(result_map[f"appr-{metric}"])
+            np.savetxt(os.path.join(dataset_path, f"appr-{metric}{version}.txt"), result_map[f"appr-{metric}"])
     for metric in (metrics + ["time"]):
-        result_dfs[metric].to_csv(os.path.join("result", f"exp1-{metric}{version}.csv"))
+        result_dfs[metric].to_csv(os.path.join("../result", f"exp1-{metric}{version}.csv"))
