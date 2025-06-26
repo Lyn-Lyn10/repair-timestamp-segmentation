@@ -132,26 +132,35 @@ if __name__ == "__main__":
             l_min = param["l_min"]
             interval_granularity = param["interval_granularity"]
             start_point_granularity = param["start_point_granularity"]
-            print("appr begin")
-            start = time.time()
-            appr_res, eps_t_e, s_0_e, m_e = appr_repair(original, lmd_a, lmd_d, mate, interval_granularity, l_min)
-            end = time.time()
-            appr_time = end - start
-            print("appr end")
-            start = time.time()
-            exact_res = exact_repair(original, lmd_a, lmd_d, l_min, interval_granularity, start_point_granularity)
-            end = time.time()
-            print("exact end")
-            exact_time = end - start
+            if "appr" in methods:
+                print("appr begin")
+                start = time.time()
+                appr_res, eps_t_e, s_0_e, m_e = appr_repair(original, lmd_a, lmd_d, mate, interval_granularity, l_min)
+                end = time.time()
+                appr_time = end - start
+                print("appr end")
+            if "exact" in methods:
+                print("exact begin")
+                start = time.time()
+                exact_res = exact_repair(original, lmd_a, lmd_d, l_min, interval_granularity, start_point_granularity)
+                end = time.time()
+                print("exact end")
+                exact_time = end - start
             for metric in metrics:
-                result_map[f"exact-{metric}"].append(metric_res([eps_t_t, s_0_t, m_t], exact_res, truth, original,metric))
-                result_map[f"appr-{metric}"].append(metric_res([eps_t_t, s_0_t, m_t], appr_res, truth, original, metric))
-            result_map[f"exact-time"].append(exact_time)
-            result_map[f"appr-time"].append(appr_time) 
+                if "exact" in methods:
+                    result_map[f"exact-{metric}"].append(metric_res([eps_t_t, s_0_t, m_t], exact_res, truth, original,metric))
+                if "appr" in methods:
+                    result_map[f"appr-{metric}"].append(metric_res([eps_t_t, s_0_t, m_t], appr_res, truth, original, metric))
+            if "exact" in methods:
+                result_map[f"exact-time"].append(exact_time)
+            if "appr" in methods:
+                result_map[f"appr-time"].append(appr_time) 
         for metric in (metrics + ["time"]):
-            result_dfs[metric].at[dataset, "exact"] = np.mean(result_map[f"exact-{metric}"])
-            np.savetxt(os.path.join(dataset_path, f"exact-{metric}{version}.txt"), result_map[f"exact-{metric}"])
-            result_dfs[metric].at[dataset, "appr"] = np.mean(result_map[f"appr-{metric}"])
-            np.savetxt(os.path.join(dataset_path, f"appr-{metric}{version}.txt"), result_map[f"appr-{metric}"])
+            if "exact" in methods:
+                result_dfs[metric].at[dataset, "exact"] = np.mean(result_map[f"exact-{metric}"])
+                np.savetxt(os.path.join(dataset_path, f"exact-{metric}{version}.txt"), result_map[f"exact-{metric}"])
+            if "appr" in methods:
+                result_dfs[metric].at[dataset, "appr"] = np.mean(result_map[f"appr-{metric}"])
+                np.savetxt(os.path.join(dataset_path, f"appr-{metric}{version}.txt"), result_map[f"appr-{metric}"])
     for metric in (metrics + ["time"]):
         result_dfs[metric].to_csv(os.path.join("../result", f"exp1-{metric}{version}.csv"))
